@@ -20,17 +20,16 @@ import os
 import subprocess
 
 from cldevel import build
-from cldevel import fsutils
 
 name = 'test'
 build_dirs = ['bin', 'lib']
 
 
-def test(inputdir):
+def test(inputdir, clean=True):
     print '= Testing project building ='
-    print '* Cleaning build directory'
-    map(lambda n: fsutils.rmdir(os.path.join(os.path.abspath(inputdir), n)),
-        build_dirs)
+    if clean:
+        print '* Cleaning build directory'
+        build.clean(inputdir)
     print '* Building project'
     build.build(inputdir, debug=True)
     print '* Setup virtual environment'
@@ -55,8 +54,10 @@ def test(inputdir):
 
 
 def do_test(args):
-    test(args.input)
+    test(args.input, not args.no_clean)
 
 
 def add_args(parser):
+    parser.add_argument('-nc', '--no-clean', action='store_true',
+                        help='Do not clean files')
     return do_test

@@ -20,11 +20,14 @@ import os
 import shutil
 import stat
 
-from cldevel.fsutils import mkdir
 from cldevel import python
+
+from cldevel.fsutils import mkdir
+from cldevel.fsutils import rmdir
 
 name = 'build'
 
+cleandirs = ['bin', 'lib']
 
 def build_scripts(scripts, srcdir, bindir, libdir=None, debug=False):
     if 'python' in scripts:
@@ -68,11 +71,22 @@ def build(inputdir, outputdir=None, debug=False):
                   pythonlibs if lib != '/usr/lib' else None, debug)
 
 
+def clean(outputdir):
+    [rmdir(os.path.join(outputdir, i)) for i in cleandirs]
+
+
 def do_build(args):
-    build(args.input, os.path.abspath(args.output), args.debug)
+    inputdir = os.path.abspath(args.input)
+    outputdir = os.path.abspath(args.output) or inputdir
+    if args.clean:
+        clean(outputdir)
+    build(inputdir, outputdir, args.debug)
 
 
 def add_args(parser):
-    parser.add_argument('-d', '--debug', help='Build in debug mode')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='Build in debug mode')
+    parser.add_argument('-c', '--clean', action='store_true',
+                        help='Clean built files (if any) before building.')
     parser.add_argument('-o', '--output', metavar='OUTPUT', default='')
     return do_build
