@@ -15,10 +15,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA.
 
+import os
+import subprocess
 
-from cldevel import build
-from cldevel import pull
-from cldevel import shell
-from cldevel import test
+name = 'pull'
 
-commands = [build, pull, shell, test]
+
+def pull(inputdir):
+    gitdir = os.path.join(inputdir, '.git')
+    return subprocess.call(['git', '--git-dir=%s' % gitdir, 'pull'])
+
+
+def do_pull(parser):
+    pull(os.path.abspath(parser.input))
+
+
+def add_args(parser):
+    return do_pull
