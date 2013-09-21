@@ -18,6 +18,7 @@
 import json
 import os
 import subprocess
+from cldevel.fsutils import mkdir
 
 name = 'pull'
 
@@ -52,6 +53,7 @@ def do_pull(parser):
         repo.pull()
     else:
         srcdir = os.path.join(parser.input, 'source')
+        mkdir(srcdir)
         for name in setup['modules']:
             directory = os.path.join(srcdir, name)
             origin = setup['modules'][name]['type'][0]
