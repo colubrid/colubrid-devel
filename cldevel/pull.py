@@ -15,19 +15,48 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA.
 
+import json
 import os
 import subprocess
 
 name = 'pull'
 
 
-def pull(inputdir):
-    gitdir = os.path.join(inputdir, '.git')
-    return subprocess.call(['git', '--git-dir=%s' % gitdir, 'pull'])
+class Git:
+    def __init__(self, name, directory, origin):
+        self.name = name
+        self.directory = directory
+        self.origin = origin
+        self.gitdir = os.path.join(directory, '.git')
+
+    def pull(self):
+        if os.path.exists(self.directory):
+            subprocess.call(['git', '--git-dir=%s' % self.gitdir, 'pull'])
+        else:
+            subprocess.call(['git', 'clone', self.origin, self.directory])
+
+
+class GitHub(Git):
+    def __init__(self, name, directory, place):
+        Git.__init__(self, name, directory, 'git://github.com/%s' % place)
+
+
+origins = {'git': Git, 'github': GitHub}
 
 
 def do_pull(parser):
-    pull(os.path.abspath(parser.input))
+    with open(os.path.join(parser.input, 'setup.json')) as setupfile:
+        setup = json.load(setupfile)
+    if setup['type'] == 'package':
+        repo = Git(None, os.path.abspath(parser.input), None)
+        repo.pull()
+    else:
+        srcdir = os.path.join(parser.input, 'source')
+        for name in setup['modules']:
+            directory = os.path.join(srcdir, name)
+            origin = setup['modules'][name]['type'][0]
+            place = setup['modules'][name]['place']
+            origins[origin](name, directory, place).pull()
 
 
 def add_args(parser):

@@ -50,25 +50,28 @@ def build(inputdir, outputdir=None, debug=False):
     dest = outputdir or inputdir
     mkdir(dest)
 
-    # Libraries
-    libraries = os.path.join(inputdir, 'library')
-    lib = os.path.join(dest, 'lib')
-    pythonlibs = python.get_python_paths(lib)
-    mkdir(lib)
-    if 'python' in setup['libs']:
-        for path in pythonlibs:
-            mkdir(path)
-        for i in setup['libs']['python']:
-            origin = os.path.join(libraries, i)
-            destination = os.path.join(pythonlibs[-1], i)
-            shutil.copytree(origin, destination)
+    if setup['type'] == 'package':
+        # Libraries
+        libraries = os.path.join(inputdir, 'library')
+        lib = os.path.join(dest, 'lib')
+        pythonlibs = python.get_python_paths(lib)
+        mkdir(lib)
+        if 'python' in setup['libs']:
+            for path in pythonlibs:
+                mkdir(path)
+            for i in setup['libs']['python']:
+                origin = os.path.join(libraries, i)
+                destination = os.path.join(pythonlibs[-1], i)
+                shutil.copytree(origin, destination)
 
-    # Executable scripts
-    scripts = os.path.join(inputdir, 'src')
-    bins = os.path.join(dest, 'bin')
-    mkdir(bins)
-    build_scripts(setup['scripts'], scripts, bins,
-                  pythonlibs if lib != '/usr/lib' else None, debug)
+        # Executable scripts
+        scripts = os.path.join(inputdir, 'src')
+        bins = os.path.join(dest, 'bin')
+        mkdir(bins)
+        build_scripts(setup['scripts'], scripts, bins,
+                    pythonlibs if lib != '/usr/lib' else None, debug)
+    else:
+        pass
 
 
 def clean(outputdir):
