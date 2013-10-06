@@ -41,7 +41,7 @@ def build_scripts(scripts, srcdir, bindir, libdir=None, debug=False):
                      stat.S_IRGRP | stat.S_IXGRP |
                      stat.S_IROTH | stat.S_IXOTH)
     if debug and 'debug' in scripts:
-        build_scripts(scripts['debug'], srcdir, bindir, True)
+        build_scripts(scripts['debug'], srcdir, bindir, libdir, debug=True)
 
 
 def build(inputdir, outputdir=None, debug=False):
