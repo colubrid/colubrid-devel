@@ -16,6 +16,7 @@
 # MA 02110-1301, USA.
 
 import os
+import subprocess
 
 local = """
 import os
@@ -49,3 +50,10 @@ def build_python(src, dest, bindir=None, pydirs=None):
 def get_python_paths(libdir):
     pythondir = os.path.join(libdir, 'python2.7')
     return [pythondir, os.path.join(pythondir, 'site-packages')]
+
+
+def build_python_package(src, dest):
+    olddir = os.getcwd()
+    os.chdir(src)
+    subprocess.call(['python', 'setup.py', 'install', '--prefix', dest])
+    os.chdir(olddir)

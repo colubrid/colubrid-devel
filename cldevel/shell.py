@@ -16,6 +16,8 @@
 # MA 02110-1301, USA.
 
 from cldevel.build import build
+from cldevel.python import get_python_paths
+import json
 import os
 import subprocess
 import tempfile
@@ -27,22 +29,35 @@ if [ -f ~/.bashrc ]; then
 fi
 
 export PATH=$PATH:"%s"
+%s
 export PS1="[colubrid-env \W]$ "
 """
 
 
 def shell(args):
-    if not args.no_build:
+    inputdir = os.path.abspath(args.input)
+    setupfile = open(os.path.join(inputdir, 'setup.json'))
+    setup = json.load(setupfile)
+
+    if args.build:
         build(args.input, debug=True)
+
+    if setup['type'] == 'package':
+        builddir = inputdir
+        pythonpath_export = ''
+    else:
+        builddir = os.path.join(inputdir, 'build')
+        pythonpath_export = 'export PYTHONPATH=%s' %\
+            ':'.join(get_python_paths(os.path.join(builddir, 'lib')))
 
     bashrc_path = tempfile.mktemp('.bashrc')
     with open(bashrc_path, 'w') as f:
-        f.write(script % os.path.abspath(os.path.join(args.input, 'bin')))
+        f.write(script % (os.path.join(builddir, 'bin'), pythonpath_export))
 
     subprocess.call(['bash', '--rcfile', bashrc_path])
 
 
 def add_args(parser):
-    parser.add_argument('-nb', '--no-build',
-                        help='Do not build before using virtual environment')
+    parser.add_argument('-b', '--build',
+                        help='Build before using virtual environment')
     return shell

@@ -71,7 +71,17 @@ def build(inputdir, outputdir=None, debug=False):
         build_scripts(setup['scripts'], scripts, bins,
                     pythonlibs if lib != '/usr/lib' else None, debug)
     else:
-        pass
+        builddir = os.path.join(inputdir, 'build')
+        mkdir(builddir)
+        for module in setup['modules']:
+            print 'Building %s' % module
+            builders[setup['modules'][module]['type'][1]](
+                os.path.join(inputdir, 'source', module),
+                builddir)
+
+
+builders = {'colubrid': build,
+            'python': python.build_python_package}
 
 
 def clean(outputdir):
